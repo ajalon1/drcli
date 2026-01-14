@@ -68,6 +68,8 @@ type stepCompleteMsg struct {
 	needTemplateSetup    bool   // Whether we need to run template setup
 }
 
+// TODO write a function that serializes stepCompleteMsg to a string, for logging
+
 type scriptCompleteMsg struct{}
 
 type stepErrorMsg struct {
