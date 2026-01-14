@@ -68,6 +68,21 @@ type stepCompleteMsg struct {
 	needTemplateSetup    bool   // Whether we need to run template setup
 }
 
+// String serializes stepCompleteMsg to a string representation for logging
+func (msg stepCompleteMsg) String() string {
+	return fmt.Sprintf(
+		"stepCompleteMsg{message: %q, waiting: %t, done: %t, hideMenu: %t, quickstartScriptPath: %q, selfUpdate: %t, executeScript: %t, needTemplateSetup: %t}",
+		msg.message,
+		msg.waiting,
+		msg.done,
+		msg.hideMenu,
+		msg.quickstartScriptPath,
+		msg.selfUpdate,
+		msg.executeScript,
+		msg.needTemplateSetup,
+	)
+}
+
 type scriptCompleteMsg struct{}
 
 type stepErrorMsg struct {
