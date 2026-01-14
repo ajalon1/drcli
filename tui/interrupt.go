@@ -35,7 +35,7 @@ func (m InterruptibleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.String() == "ctrl+c" {
 			// Log the interrupt for debugging purposes
-			log.Debug("InterruptibleModel: Ctrl-C detected, quitting...")
+			log.Info("Ctrl-C detected, quitting...")
 			return m, tea.Quit
 		}
 	}
