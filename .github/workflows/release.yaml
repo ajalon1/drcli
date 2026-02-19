@@ -40,12 +40,6 @@ jobs:
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
 
-      - name: Mark release as pre-release until verified
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release edit ${{ github.ref_name }} --prerelease
-
       - name: Notify Slack on Failure
         if: failure()
         uses: slackapi/slack-github-action@v1.27.0
@@ -94,23 +88,18 @@ jobs:
       version: ${{ github.ref_name }}
     secrets: inherit
 
-  promote-release:
+  publish-release:
     needs: verify-installation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Promote release (remove pre-release status)
+      - name: Publish release (remove draft status)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Only promote if this is not a semantic pre-release (e.g., -rc, -beta, -alpha)
-          if [[ ! "${{ github.ref_name }}" =~ -[a-zA-Z] ]]; then
-            gh release edit ${{ github.ref_name }} --prerelease=false
-          else
-            echo "Skipping promotion: ${{ github.ref_name }} is a semantic pre-release"
-          fi
+          gh release edit ${{ github.ref_name }} --draft=false
 
       - name: Notify Slack on Success
         uses: slackapi/slack-github-action@v1.27.0
@@ -175,7 +164,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Release was published but *installation verification failed*. The release has been marked as a pre-release."
+                    "text": "Release was created but *installation verification failed*. The release remains as a draft."
                   }
                 },
                 {

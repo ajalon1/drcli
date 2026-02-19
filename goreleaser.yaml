@@ -65,6 +65,7 @@ changelog:
       - "^test:"
 
 release:
+  draft: true
   extra_files:
     - glob: ./**/*.rb
   footer: |
