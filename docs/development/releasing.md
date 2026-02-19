@@ -183,12 +183,14 @@ The GitHub Actions workflow (`.github/workflows/release.yaml`) automatically:
 
 ### Post-release verification
 
-After GoReleaser publishes the release, the workflow automatically verifies that the binaries can be installed on all supported platforms. This catches issues where the release was created but binaries were not properly attached.
+After GoReleaser publishes the release, the workflow follows a "verify before promoting" approach:
 
-If installation verification fails:
-- The release is automatically marked as a **pre-release**
-- A Slack notification is sent alerting the team to review the release
-- The release remains available but is flagged for investigation
+1. **Publish as pre-release**: The release is immediately marked as a pre-release after GoReleaser completes
+2. **Verify installation**: The workflow tests installation on all supported platforms (Linux, macOS, Windows)
+3. **Promote on success**: If verification passes, the pre-release status is removed and a success Slack notification is sent
+4. **Stay as pre-release on failure**: If verification fails, the release remains a pre-release and a warning Slack notification is sent
+
+This approach ensures users installing "latest" never get a broken release.
 
 To fix a failed release:
 1. Investigate the installation failure in the workflow logs

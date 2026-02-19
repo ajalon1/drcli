@@ -40,6 +40,12 @@ jobs:
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
 
+      - name: Mark release as pre-release until verified
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit ${{ github.ref_name }} --prerelease
+
       - name: Notify Slack on Failure
         if: failure()
         uses: slackapi/slack-github-action@v1.27.0
@@ -88,10 +94,19 @@ jobs:
       version: ${{ github.ref_name }}
     secrets: inherit
 
-  notify-success:
+  promote-release:
     needs: verify-installation
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Promote release (remove pre-release status)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit ${{ github.ref_name }} --prerelease=false
+
       - name: Notify Slack on Success
         uses: slackapi/slack-github-action@v1.27.0
         with:
@@ -132,20 +147,11 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
-  rollback-on-failure:
+  notify-verification-failure:
     needs: verify-installation
     if: failure()
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Mark release as pre-release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release edit ${{ github.ref_name }} --prerelease
-
       - name: Notify Slack of Installation Failure
         uses: slackapi/slack-github-action@v1.27.0
         with:
