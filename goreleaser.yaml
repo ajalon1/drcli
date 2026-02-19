@@ -36,9 +36,10 @@ builds:
     id: darwin
     goos: [darwin]
 
-  - <<: *build_defaults
-    id: windows
-    goos: [windows]
+  # TEMPORARY: Disabled Windows build to test release verification failure
+  # - <<: *build_defaults
+  #   id: windows
+  #   goos: [windows]
 
 archives:
   - formats: [tar.gz]
