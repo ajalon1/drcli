@@ -170,7 +170,7 @@ goreleaser check
 
 ## Automated release workflow
 
-The GitHub Actions workflow (`.github/workflows/release.yml`) automatically:
+The GitHub Actions workflow (`.github/workflows/release.yaml`) automatically:
 
 1. Triggers on tag push matching `v*`
 2. Checks out the code
@@ -178,6 +178,22 @@ The GitHub Actions workflow (`.github/workflows/release.yml`) automatically:
 4. Runs GoReleaser
 5. Creates GitHub release
 6. Uploads all artifacts
+7. Verifies installation on all platforms (Linux, macOS, Windows)
+8. Sends Slack notification on success
+
+### Post-release verification
+
+After GoReleaser publishes the release, the workflow automatically verifies that the binaries can be installed on all supported platforms. This catches issues where the release was created but binaries were not properly attached.
+
+If installation verification fails:
+- The release is automatically marked as a **pre-release**
+- A Slack notification is sent alerting the team to review the release
+- The release remains available but is flagged for investigation
+
+To fix a failed release:
+1. Investigate the installation failure in the workflow logs
+2. Fix the underlying issue (usually missing or corrupted binaries)
+3. Either re-upload the binaries and manually promote the release, or delete and recreate the release
 
 ## Best practices
 
