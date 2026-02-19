@@ -1,4 +1,4 @@
-name: Installation Tests (On Demand)
+name: On-Demand Installation Tests
 
 on:
   workflow_dispatch:
