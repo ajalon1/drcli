@@ -39,8 +39,60 @@ jobs:
           MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
+
+      - name: Notify Slack on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {
+              "text": "❌ DR CLI Release Failed",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "❌ DR CLI Release Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Version:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n<${{ github.event.repository.html_url }}|${{ github.repository }}>"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+  verify-installation:
+    needs: release
+    uses: ./.github/workflows/.installation-tests-matrix.yaml
+    with:
+      version: ${{ github.ref_name }}
+    secrets: inherit
+
+  notify-success:
+    needs: verify-installation
+    runs-on: ubuntu-latest
+    steps:
       - name: Notify Slack on Success
-        if: success()
         uses: slackapi/slack-github-action@v1.27.0
         with:
           payload: |
@@ -80,19 +132,39 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
-      - name: Notify Slack on Failure
-        if: failure()
+  rollback-on-failure:
+    needs: verify-installation
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Mark release as pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit ${{ github.ref_name }} --prerelease
+
+      - name: Notify Slack of Installation Failure
         uses: slackapi/slack-github-action@v1.27.0
         with:
           payload: |
             {
-              "text": "❌ DR CLI Release Failed",
+              "text": "⚠️ DR CLI Release Requires Review",
               "blocks": [
                 {
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "❌ DR CLI Release Failed"
+                    "text": "⚠️ DR CLI Release Requires Review"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Release was published but *installation verification failed*. The release has been marked as a pre-release."
                   }
                 },
                 {
