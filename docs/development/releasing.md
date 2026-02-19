@@ -197,6 +197,17 @@ To fix a failed release:
 2. Fix the underlying issue (usually missing or corrupted binaries)
 3. Either re-upload the binaries and manually promote the release, or delete and recreate the release
 
+### Testing installation manually
+
+Use the **Installation Tests (On Demand)** workflow to test installation without creating a release:
+
+1. Go to **Actions** > **Installation Tests (On Demand)**
+2. Click **Run workflow**
+3. Enter a version (e.g., `v0.2.49`) or leave empty for latest
+4. Click **Run workflow**
+
+This is useful for verifying installation scripts work correctly before or after releases.
+
 ## Best practices
 
 1. Never tag the same commit twice.
