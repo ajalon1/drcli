@@ -105,7 +105,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release edit ${{ github.ref_name }} --prerelease=false
+          # Only promote if this is not a semantic pre-release (e.g., -rc, -beta, -alpha)
+          if [[ ! "${{ github.ref_name }}" =~ -[a-zA-Z] ]]; then
+            gh release edit ${{ github.ref_name }} --prerelease=false
+          else
+            echo "Skipping promotion: ${{ github.ref_name }} is a semantic pre-release"
+          fi
 
       - name: Notify Slack on Success
         uses: slackapi/slack-github-action@v1.27.0
