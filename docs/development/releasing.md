@@ -183,19 +183,19 @@ The GitHub Actions workflow (`.github/workflows/release.yaml`) automatically:
 
 ### Post-release verification
 
-After GoReleaser creates the release, the workflow follows a "verify before publishing" approach:
+After GoReleaser creates the release, the workflow follows a "verify before promoting" approach:
 
-1. **Create as draft**: The release is created as a draft (hidden from users)
+1. **Mark as pre-release**: The release is immediately marked as a pre-release after creation
 2. **Verify installation**: The workflow tests installation on all supported platforms (Linux, macOS, Windows)
-3. **Publish on success**: If verification passes, the draft is published and a success Slack notification is sent
-4. **Stay as draft on failure**: If verification fails, the release remains a draft and a warning Slack notification is sent
+3. **Promote on success**: If verification passes, stable releases are recreated without pre-release status and a success Slack notification is sent
+4. **Stay as pre-release on failure**: If verification fails, the release remains marked as a pre-release and a warning Slack notification is sent
 
-This approach ensures users installing "latest" never get a broken release, as draft releases are completely hidden until published.
+This approach ensures users installing "latest" never get a broken release. Semantic pre-releases (e.g., `v1.0.0-rc.1`) remain as pre-releases even after successful verification.
 
 To fix a failed release:
 1. Investigate the installation failure in the workflow logs
 2. Fix the underlying issue (usually missing or corrupted binaries)
-3. Either re-upload the binaries and manually publish the draft release, or delete and recreate the release
+3. Either re-upload the binaries and manually remove pre-release status via GitHub UI, or delete and recreate the release
 
 ### Testing installation manually
 
